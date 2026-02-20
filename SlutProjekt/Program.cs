@@ -12,4 +12,14 @@
 
 
 
-// List<Card> deck = CreateDeck("Standard");
+Deck Standard = new()
+{
+    // cards=MethodBox.CreateDeck("Standard")
+    deckType="Standard"
+};
+
+foreach (Card card in Standard.cards)
+{
+    Console.WriteLine($"{card.Value} of {card.Suit}");
+}
+Console.ReadLine();

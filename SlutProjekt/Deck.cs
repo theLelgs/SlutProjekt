@@ -1,22 +1,11 @@
 class Deck{
 
-    List<Card> cards;
+    public List<Card> cards = [];
+    public string deckType;
 
-    static List<Card> CreateDeck(string deckname)
+    public Deck()
     {
-        List<Card> dummyDeck = [];
-        List<string> Suits = ["Spades", "Clubs", "Diamonds", "Hearts"];
-        if (deckname == "Standard")
-        {
-            for (int CardValue = 2; CardValue <= 14; CardValue++)
-            {
-                for (int i = 0; i < 4; i++)
-                {
-                    Card dummyCard = new(){Value=CardValue, Suit=Suits[i]};
-                    dummyDeck.Add(dummyCard);
-                }
-            }
-        }
-        return dummyDeck;
+        cards = MethodBox.CreateDeck(deckType);
     }
+    
 }
