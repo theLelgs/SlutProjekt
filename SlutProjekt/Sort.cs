@@ -1,5 +1,4 @@
-class Sort
-{
+class Sort{
     public static List<Card> Descending(List<Card> inputCards)
     {
         List<Card> dummyList = [];

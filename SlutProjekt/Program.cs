@@ -1,17 +1,21 @@
 ﻿string input = "";
 
 //Run start: 
-Deck currentDeck = new("Standard");
-
-
+Deck deck = new("Standard");
 int handSize = 7;
 
+//Ante start:
+Deck tempDeck = new(null);
+foreach (Card card in deck.cards)
+{
+    tempDeck.cards.Add(card);
+}
 List<Card> hand = [];
 List<Card> selectedCards=[];
 
 while (true)
 {
-    (hand, currentDeck.cards) = DrawCard(Math.Min(handSize-hand.Count,currentDeck.cards.Count), hand, currentDeck);
+    (hand, tempDeck.cards) = DrawCard(Math.Min(handSize-hand.Count,tempDeck.cards.Count), hand, tempDeck);
     
     if (input == "Suit")
     {
@@ -36,7 +40,7 @@ while (true)
     }
     Console.WriteLine("");
     input = Console.ReadLine();
-    
+
     if (input == "toggleLast")
     {
         if (selectedCards.Contains(hand[^1]))
@@ -64,6 +68,32 @@ while (true)
             }
         }
     }
+    if (input.Split(":")[0]=="toggle"&&int.TryParse(input.Split(":")[1], out int toToggle)&&toToggle<=hand.Count)
+    {
+        List<Card> cardsToToggle = [];
+        for(int i = 0; i<toToggle;i++)
+        {
+            cardsToToggle.Add(hand[i]);
+        }
+        
+        bool willSelect = false;
+        foreach(Card card in cardsToToggle)
+        {
+            if (!selectedCards.Contains(card))
+            {
+                willSelect=true;
+            }
+        }
+
+        if (willSelect)
+        {
+            selectedCards.AddRange(cardsToToggle);
+        }
+        else
+        {
+            selectedCards=selectedCards.Except(cardsToToggle).ToList();
+        }
+    }
     if (input == "discard")
     {
         List<Card> dummyList = [];
@@ -77,8 +107,8 @@ while (true)
             selectedCards.Remove(card);
         }
     }
-}
 
+}
 
 static (List<Card> newHand, List<Card> newDeckCards) DrawCard(int cardsToDraw, List<Card> hand, Deck deck)
 {
@@ -92,5 +122,3 @@ static (List<Card> newHand, List<Card> newDeckCards) DrawCard(int cardsToDraw, L
     }
     return (newHand, newDeckCards);
 }
-
-
