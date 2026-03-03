@@ -37,12 +37,8 @@ while (true)
     
     if (sortMethods.Contains(input))
     {
-        hand = Sort(hand, input);    
+        hand = MethodBox.Sort(hand, input);    
     }
-
-
-
-
     foreach (Card card in hand)
     {
         if (isSelected[hand.IndexOf(card)])
@@ -87,33 +83,11 @@ while (true)
         {
             if (isSelected[i])
             {
-                // hand.RemoveAt(i);
+                hand.RemoveAt(i);
                 isSelected[i]=false;
             }
         }
     }
-    // if (input == "test2")
-    // {
-    //     foreach (Card card in selectedCards)
-    //     {
-    //         hand.Remove(card);
-    //     }
-    //     selectedCards=[];
-    // }
-    // if (input == "test3")
-    // {
-    //     selectedCards=[];
-    //     selectedCards.AddRange(hand);
-    // }
-    
-    // if (selectedCards.Count>0)
-    // {
-    //     Console.WriteLine("Selected cards: ");
-    //     for (int i = 0; i < selectedCards.Count; i++)
-    //     {
-    //        Console.WriteLine($"{i+1}. {selectedCards[i].Value} of {selectedCards[i].Suit}");
-    //     }
-    // }
 }
 
 
@@ -128,56 +102,4 @@ static (List<Card> newHand, Deck newDeck) DrawCard(int cardsToDraw, List<Card> h
         newDeck.cards.Remove(randomCard);
     }
     return (newHand, newDeck);
-}
-static List<Card> Sort(List<Card> inputCards, string sortMethod)//Sorterar en lista med kort. Alternativ är "Ascending", "Descending" och "Suit".
-{
-    List<Card> dummyList = [];
-    switch(sortMethod)
-    {
-        case "Descending":
-            for (int cardValue = 14; cardValue > 1; cardValue--)
-            {
-                foreach(Card card in inputCards)
-                {
-                    if (card.Value==cardValue)
-                    {
-                        dummyList.Add(card);
-                    }
-                }
-            }
-            break;
-        case "Ascending":
-            for (int cardValue = 2; cardValue < 14; cardValue++)
-            {
-                foreach(Card card in inputCards)
-                {
-                    if (card.Value==cardValue)
-                    {
-                        dummyList.Add(card);
-                    }
-                }
-            }
-            break;
-        case "Suit":
-            List<string> suits = ["Spades", "Clubs", "Diamonds", "Hearts"];
-            foreach (string suit in suits)
-            {
-                List<Card> dummyList2 = [];
-                foreach (Card card in inputCards)
-                {
-                    if (card.Suit==suit)
-                    {
-                        dummyList2.Add(card);
-                    }
-                }
-                dummyList.AddRange(Sort(dummyList2, "Descending"));
-            }
-
-            break;
-        default:
-            Console.WriteLine("Invalid sortMethod");
-            dummyList=inputCards;
-            break;     
-    }
-    return dummyList;
 }
