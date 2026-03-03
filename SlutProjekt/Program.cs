@@ -1,10 +1,8 @@
 ﻿string input = "";
 
 //Run start: 
-Deck currentDeck = new()
-{
-    cards=MethodBox.CreateDeck("Standard")
-};
+Deck currentDeck = new("Standard");
+
 
 int handSize = 7;
 
@@ -13,19 +11,19 @@ List<Card> selectedCards=[];
 
 while (true)
 {
-    (hand, currentDeck) = DrawCard(Math.Min(handSize-hand.Count,currentDeck.cards.Count), hand, currentDeck);
+    (hand, currentDeck.cards) = DrawCard(Math.Min(handSize-hand.Count,currentDeck.cards.Count), hand, currentDeck);
     
     if (input == "Suit")
     {
-        hand=MethodBox.SortBySuit(hand);
+        hand=Sort.Suit(hand);
     }
     if (input == "Descending")
     {
-        hand=MethodBox.SortDescending(hand);
+        hand=Sort.Descending(hand);
     }
     if (input == "Ascending")
     {
-        hand=MethodBox.SortAscending(hand);
+        hand=Sort.Ascending(hand);
     }
     
     foreach (Card card in hand)
@@ -38,6 +36,7 @@ while (true)
     }
     Console.WriteLine("");
     input = Console.ReadLine();
+    
     if (input == "toggleLast")
     {
         if (selectedCards.Contains(hand[^1]))
@@ -81,17 +80,17 @@ while (true)
 }
 
 
-static (List<Card> newHand, Deck newDeck) DrawCard(int cardsToDraw, List<Card> hand, Deck deck)
+static (List<Card> newHand, List<Card> newDeckCards) DrawCard(int cardsToDraw, List<Card> hand, Deck deck)
 {
     List<Card> newHand = hand;
-    Deck newDeck = deck;
+    List<Card> newDeckCards = deck.cards;
     for (int cardsDrawn = 0; cardsDrawn < cardsToDraw; cardsDrawn++)
     {
         Card randomCard = deck.cards[Random.Shared.Next(deck.cards.Count)];
         newHand.Add(randomCard);
-        newDeck.cards.Remove(randomCard);
+        newDeckCards.Remove(randomCard);
     }
-    return (newHand, newDeck);
+    return (newHand, newDeckCards);
 }
 
 
