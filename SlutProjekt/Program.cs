@@ -1,4 +1,8 @@
-﻿string input = "";
+﻿// using Raylib_cs;
+// Raylib.InitWindow(800,600,"Balatro");
+
+
+string input = "";
 
 //Run start: 
 Deck deck = new("Standard");
@@ -75,7 +79,7 @@ while (true)
         {
             cardsToToggle.Add(hand[i]);
         }
-        
+
         bool willSelect = false;
         foreach(Card card in cardsToToggle)
         {
@@ -87,7 +91,7 @@ while (true)
 
         if (willSelect)
         {
-            selectedCards.AddRange(cardsToToggle);
+            selectedCards.AddRange(cardsToToggle.Except(selectedCards));
         }
         else
         {
@@ -107,6 +111,30 @@ while (true)
             selectedCards.Remove(card);
         }
     }
+
+    if (input == "play"&&selectedCards.Count!=0)
+    {
+        string handType;
+        //Look for how many instances of each value, add to dictionary
+        Dictionary<int, int> dummyDictionary = [];
+        foreach (Card card in selectedCards)
+        {
+            if (dummyDictionary.Keys.Contains(card.Value))
+            {
+                dummyDictionary[card.Value]++;
+            }
+            else
+            {    
+                dummyDictionary.Add(card.Value,1);
+            }
+        }
+        foreach (int value in dummyDictionary.Keys)
+        {
+            Console.WriteLine($"{value}, {dummyDictionary[value]}");
+        }
+    }
+
+
 
 }
 
