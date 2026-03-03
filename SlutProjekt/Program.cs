@@ -1,91 +1,81 @@
-﻿// Pseudokod;
-// Class: Card;
-// Sparar värde och färg.
-// Instanser 1-13 och spader/hjärter/klöver/ruter läggs till i lista, List<Card> deck;
-// 
-// Dra kort från deck, lägg till i hand.
-// Använd "List<Card> tempDeck = deck" under spelets gång, så man kan ta ut kort utan problem.
-// 
-// Ta ut kort från tempDeck, lägg till i hand. Array eller list för hand (Vill man kunna modifiera max hand-size?)
-// deck-class?
-// Ska man ha CreateDeck() som en metod under deck-classen?
-// 
-// On run start:
-// Create deck
-// Move deck to tempDeck
-// Set ante, $, hands, discards etc.
+﻿string input = "";
 
-string input = "";
-List<Card> hand = [];
+//Run start: 
 Deck currentDeck = new()
 {
     cards=MethodBox.CreateDeck("Standard")
 };
-List<Card> selectedCards = [];
-int handSize = 7;
-List<bool> isSelected=[];
-for (int i = 0; i < handSize; i++)
-{
-    isSelected.Add(false);
-}
 
-List<string> sortMethods = ["Ascending", "Descending", "Suit"];
+int handSize = 7;
+
+List<Card> hand = [];
+List<Card> selectedCards=[];
 
 while (true)
 {
-    (hand, currentDeck) = DrawCard(handSize-hand.Count, hand, currentDeck);
+    (hand, currentDeck) = DrawCard(Math.Min(handSize-hand.Count,currentDeck.cards.Count), hand, currentDeck);
     
-    if (sortMethods.Contains(input))
+    if (input == "Suit")
     {
-        hand = MethodBox.Sort(hand, input);    
+        hand=MethodBox.SortBySuit(hand);
     }
+    if (input == "Descending")
+    {
+        hand=MethodBox.SortDescending(hand);
+    }
+    if (input == "Ascending")
+    {
+        hand=MethodBox.SortAscending(hand);
+    }
+    
     foreach (Card card in hand)
     {
-        if (isSelected[hand.IndexOf(card)])
+        if (selectedCards.Contains(card))
         {
             Console.Write("    ");
         }
         Console.WriteLine($"Hand: {card.Value} of {card.Suit}");
     }
-    
+    Console.WriteLine("");
     input = Console.ReadLine();
     if (input == "toggleLast")
     {
-        if (isSelected[^1])
+        if (selectedCards.Contains(hand[^1]))
         {
-            isSelected[^1]=false;
+            selectedCards.Remove(hand[^1]);
         }
         else
         {
-            isSelected[^1]=true;
+            selectedCards.Add(hand[^1]);
         }
     }
-    if (input=="toggleAll")
+    if (input == "toggleAll")
     {
-        if (isSelected.Contains(false))
-        {    
-            for (int i = 0; i < isSelected.Count; i++)
-            {
-                isSelected[i]=true;
-            }
-        }
-        else
+        if (MethodBox.ListsAreTheSame(selectedCards, hand))
         {
-            for (int i = 0; i < isSelected.Count; i++)
+            selectedCards.Clear();
+        }
+        else{
+            foreach (Card card in hand)
             {
-                isSelected[i]=false;
+                if (!selectedCards.Contains(card))
+                {
+                    selectedCards.Add(card);
+                }
             }
         }
     }
     if (input == "discard")
     {
-        for (int i = 0; i < isSelected.Count; i++)
+        List<Card> dummyList = [];
+        foreach (Card card in selectedCards)
         {
-            if (isSelected[i])
-            {
-                hand.RemoveAt(i);
-                isSelected[i]=false;
-            }
+            hand.Remove(card);
+            dummyList.Add(card);
+        }
+        foreach (Card card in dummyList)
+        {
+            selectedCards.Remove(card);
         }
     }
 }
@@ -103,3 +93,5 @@ static (List<Card> newHand, Deck newDeck) DrawCard(int cardsToDraw, List<Card> h
     }
     return (newHand, newDeck);
 }
+
+
