@@ -14,5 +14,13 @@ class Deck{
                 }
             }
         }
+        if (deckType == "Random")
+        {
+            for (int i = 0; i < 52; i++)
+            {
+                Card dummyCard = new(){Value=Random.Shared.Next(2,15), Suit=Suits[Random.Shared.Next(4)]};
+                cards.Add(dummyCard);
+            }
+        }
     }
 }
