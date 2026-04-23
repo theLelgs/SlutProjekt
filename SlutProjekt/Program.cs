@@ -1,9 +1,4 @@
-﻿using Raylib_cs;
-
-Raylib.InitWindow(800,600,"Balatro");
-Raylib.SetTargetFPS(60);
-
-string input = "";
+﻿string input = "";
 
 //Run start: 
 // Deck deck = new("Standard");
@@ -18,6 +13,10 @@ foreach (Card card in deck.cards)
 }
 List<Card> hand = [];
 List<Card> selectedCards=[];
+
+
+Joker testJoker = new(45);
+List<Joker> jokers = [testJoker];
 
 
 
@@ -41,37 +40,39 @@ Dictionary<string, (int chips, int mult, int level, (int chipsBuff, int multBuff
 
 
 bool gameRunning = true;
-while (gameRunning && !Raylib.WindowShouldClose())
+PrintCommands();
+while (gameRunning)
 {
-    Raylib.BeginDrawing();
-    
     (hand, tempDeck.cards) = DrawCard(Math.Min(handSize-hand.Count,tempDeck.cards.Count), hand, tempDeck);
     
-    if (input == "Suit")
-    {
-        hand=Sort.Suit(hand);
-    }
-    if (input == "Descending")
-    {
-        hand=Sort.Descending(hand);
-    }
-    if (input == "Ascending")
-    {
-        hand=Sort.Ascending(hand);
-    }
-    
+    Console.WriteLine("\nHand: ");
     foreach (Card card in hand)
     {
         if (selectedCards.Contains(card))
         {
             Console.Write("    ");
         }
-        Console.WriteLine($"Hand: {card.Value} of {card.Suit}");
+        Console.WriteLine($"    {card.value} of {card.suit}");
     }
-    Console.WriteLine("");
-    input = Console.ReadLine();
 
-    if (input == "toggleLast")
+    input = Console.ReadLine();
+    if (input == "Help")
+    {
+        PrintCommands();
+    }
+    else if (input == "Suit")
+    {
+        hand=Sort.Suit(hand);
+    }
+    else if (input == "Descending")
+    {
+        hand=Sort.Descending(hand);
+    }
+    else if (input == "Ascending")
+    {
+        hand=Sort.Ascending(hand);
+    }
+    else if (input == "toggleLast")
     {
         if (selectedCards.Contains(hand[^1]))
         {
@@ -82,7 +83,7 @@ while (gameRunning && !Raylib.WindowShouldClose())
             selectedCards.Add(hand[^1]);
         }
     }
-    if (input == "toggleAll")
+    else if (input == "toggleAll")
     {
         if (MethodBox.ListsAreTheSame(selectedCards, hand))
         {
@@ -98,45 +99,86 @@ while (gameRunning && !Raylib.WindowShouldClose())
             }
         }
     }
-    if (input.Split(":")[0]=="toggle"&&int.TryParse(input.Split(":")[1], out int toToggle)&&toToggle<=hand.Count)
-    {
-        List<Card> cardsToToggle = [];
-        for(int i = 0; i<toToggle;i++)
+    else if (input.Contains(':'))
+    {        
+        if (input.Split(":")[0]=="toggle")
         {
-            cardsToToggle.Add(hand[i]);
-        }
-
-        bool willSelect = false;
-        foreach(Card card in cardsToToggle)
-        {
-            if (!selectedCards.Contains(card))
+            if (int.TryParse(input.Split(":")[1], out int toToggle))
             {
-                willSelect=true;
+                if (toToggle<=hand.Count&&toToggle>0)
+                {
+                List<Card> cardsToToggle = [];
+                for(int i = 0; i<toToggle;i++)
+                {
+                    cardsToToggle.Add(hand[i]);
+                }
+
+                bool willSelect = false;
+                foreach(Card card in cardsToToggle)
+                {
+                    if (!selectedCards.Contains(card))
+                    {
+                        willSelect=true;
+                    }
+                }
+                if (willSelect)
+                {
+                    selectedCards.AddRange(cardsToToggle.Except(selectedCards));
+                }
+                else
+                {
+                    selectedCards=selectedCards.Except(cardsToToggle).ToList();
+                }
+                }
+                else if (toToggle>hand.Count)
+                {
+                    Console.WriteLine("Cannot toggle more cards than you have");
+                }
+                else
+                {
+                    Console.WriteLine("You cannot toggle less than 1 card");
+                }
+            }
+            else
+            {
+                Console.WriteLine("You did not write a valid number after \"toggle:\". Try again");
             }
         }
-        
-        if (willSelect)
+        if(input.Split(":")[0]=="GetJoker")
         {
-            selectedCards.AddRange(cardsToToggle.Except(selectedCards));
-        }
-        else
-        {
-            selectedCards=selectedCards.Except(cardsToToggle).ToList();
+            if (int.TryParse(input.Split(":")[1], out int jokerID))
+            {
+                if ((jokerID>0&&jokerID<=15)||jokerID==45)
+                {    
+                    Joker joker = new(jokerID);
+                    jokers.Add(joker);
+                    Console.WriteLine($"Added {joker.name} to your joker list\nEffect: {joker.description}");
+                    
+                }
+                else if(jokerID>15)
+                {
+                    Console.WriteLine("There are no jokers with an ID above 15 (except 45), choose a lower number.");
+                }
+                else
+                {
+                    Console.WriteLine("You need to input a number between 1 and 15 (except 45), choose another number");
+                }
+            }
         }
     }
-
-    if (input == "discard")
+    
+    else if (input == "discard")
     {
         (hand, selectedCards) = RemoveCards(hand, selectedCards);
     }
 
-    if (input == "play"&&selectedCards.Count!=0)
+    else if (input == "play"&&selectedCards.Count!=0)
     {
     
         //Look for how many instances of each value, add to dictionary
 
         Console.WriteLine("Played hand: " + FindBestHand(selectedCards));
-        Console.WriteLine($"Score: {GetScore(selectedCards, handDictionary)}");
+        Console.WriteLine($"Score: {GetScore(selectedCards, handDictionary, jokers)}");
         
         //Remove the played cards
         (hand, selectedCards) = RemoveCards(hand, selectedCards);
@@ -148,7 +190,6 @@ while (gameRunning && !Raylib.WindowShouldClose())
         Console.ReadKey();
         gameRunning=false;
     }
-    Raylib.EndDrawing();
 }
 
 static (List<Card> newHand, List<Card> newDeckCards) DrawCard(int cardsToDraw, List<Card> hand, Deck deck)
@@ -165,27 +206,7 @@ static (List<Card> newHand, List<Card> newDeckCards) DrawCard(int cardsToDraw, L
 }
 static string FindBestHand(List<Card> selectedCards)
 {
-    Dictionary<int, int> valueDictionary = [];
-    Dictionary<string, int> suitDictionary = [];
-    foreach (Card card in selectedCards)
-    {
-        if (valueDictionary.ContainsKey(card.Value))
-        {
-            valueDictionary[card.Value]++;
-        }
-        else
-        {    
-            valueDictionary.Add(card.Value, 1);
-        }
-        if (suitDictionary.ContainsKey(card.Suit))
-        {
-            suitDictionary[card.Suit]++;
-        }
-        else
-        {
-            suitDictionary.Add(card.Suit, 1);
-        }
-    }
+    (Dictionary<int, int> valueDictionary, Dictionary<string, int> suitDictionary) = MakeDictionary(selectedCards);
 
     List<string> validHands = GetHands(valueDictionary, suitDictionary, selectedCards);
         
@@ -199,6 +220,30 @@ static string FindBestHand(List<Card> selectedCards)
         }
     }
     return "High Card";
+}
+static (Dictionary<int, int>, Dictionary<string, int>) MakeDictionary(List<Card> selectedCards)
+{
+    (Dictionary<int, int> valueDictionary, Dictionary<string, int> suitDictionary) = ([],[]);
+    foreach (Card card in selectedCards)
+    {
+        if (valueDictionary.ContainsKey(card.value))
+        {
+            valueDictionary[card.value]++;
+        }
+        else
+        {    
+            valueDictionary.Add(card.value, 1);
+        }
+        if (suitDictionary.ContainsKey(card.suit))
+        {
+            suitDictionary[card.suit]++;
+        }
+        else
+        {
+            suitDictionary.Add(card.suit, 1);
+        }
+    }
+    return (valueDictionary, suitDictionary);
 }
 static List<string> GetHands(Dictionary<int,int> valueDictionary, Dictionary<string, int> suitDictionary, List<Card> selectedCards)
 {
@@ -296,21 +341,112 @@ static (List<Card> newHand, List<Card> newSelectedCards) RemoveCards(List<Card> 
     selectedCards=[];
     return (hand, selectedCards);
 }
-static int GetScore(List<Card> cardsPlayed, Dictionary<string, (int chips, int mult, int level, (int chipsBuff, int multBuff))> handDictionary) 
+static int GetScore(List<Card> cardsPlayed, Dictionary<string, (int chips, int mult, int level, (int chipsBuff, int multBuff))> handDictionary, List<Joker> jokers) 
 {
+
+    List<int> triggerPostScoring = [0,1,45];
+    List<Joker> toTrigger = [];
+    Dictionary<List<int>, List<Joker> > triggerValues = [];
+    Dictionary<List<string>, List<Joker> > triggerHands = [];
+    Dictionary<string, List<Joker>> triggerSuits = [];
+    Console.WriteLine("Jokers: ");
+    foreach (Joker joker in jokers)
+    {
+        if (joker.triggerValues!=null)
+        {
+            if (triggerValues.TryGetValue(joker.triggerValues, out List<Joker> jokersToTrigger))
+            {
+                jokersToTrigger.Add(joker);
+            }
+            else
+            {
+                triggerValues.Add(joker.triggerValues, [joker]);    
+            }
+        }
+        if (joker.triggerSuit!=null)
+        {
+            if (triggerSuits.TryGetValue(joker.triggerSuit, out List<Joker> jokersToTrigger))
+            {
+                jokersToTrigger.Add(joker);
+            }
+            else
+            {
+                triggerSuits.Add(joker.triggerSuit, [joker]);    
+            }
+        }
+        if (joker.triggerHands.Count!=0)
+        {
+            if (triggerHands.TryGetValue(joker.triggerHands, out List<Joker> jokersToTrigger))
+            {
+                jokersToTrigger.Add(joker);
+            }
+            else
+            {
+                triggerHands.Add(joker.triggerHands, [joker]);
+            }
+        }
+        if (triggerPostScoring.Contains(joker.jokerID))
+        {
+            toTrigger.Add(joker);
+        }
+    }
+    (Dictionary<int,int> valueDictionary,  Dictionary<string, int> suitDictionary) = MakeDictionary(cardsPlayed);
+    List<string> handsPlayed = GetHands(valueDictionary, suitDictionary, cardsPlayed);
     string handPlayed = FindBestHand(cardsPlayed);
     int chips = handDictionary[handPlayed].chips;
     int mult = handDictionary[handPlayed].mult;
-    List<int?> cardScore = [2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 11];
+    List<int> cardScore = [2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 11];
     foreach (Card card in cardsPlayed)
     {
-        chips+=(int)cardScore[card.Value-2];
+        chips+=cardScore[card.value-2];
+        foreach (KeyValuePair<List<int>, List<Joker>> valuePair in triggerValues)
+        {
+            if (valuePair.Key.Contains(card.value))
+            {
+                for (int i = 0; i < valuePair.Value.Count; i++)
+                {
+                (valuePair.Value[i], chips, mult, handDictionary) = Joker.TriggerJoker(valuePair.Value[i], chips, mult, handPlayed, handDictionary);
+                }
+            }
+        }
+        if (triggerSuits.TryGetValue(card.suit, out List<Joker> jokerList))
+        {
+            for (int i = 0; i < jokerList.Count; i++)
+            {
+                (jokerList[i], chips, mult, handDictionary) = Joker.TriggerJoker(jokerList[i], chips, mult, handPlayed, handDictionary);
+            }
+        }
     }
 
+    foreach (KeyValuePair<List<string>, List<Joker>> valuePair in triggerHands)
+    {
+        foreach (string hand in handsPlayed)
+        {
+            if (valuePair.Key.Contains(hand))
+            {
+                for(int i = 0; i < valuePair.Value.Count; i++)
+                {
+                    (valuePair.Value[i], chips, mult, handDictionary) = Joker.TriggerJoker(valuePair.Value[i], chips, mult, handPlayed, handDictionary);
+                }
+            }
+        }
+    }    
+    for (int i = 0; i < toTrigger.Count; i++)
+    {
+        (toTrigger[i], chips, mult, handDictionary) = Joker.TriggerJoker(toTrigger[i], chips, mult, handPlayed, handDictionary);
+    }
+    Console.WriteLine($"Chips: {chips}, Mult: {mult}");
     return chips*mult;
 }
-
-
-
-
-
+static void PrintCommands(){
+    Console.WriteLine("toggle:X\n    Toggles the first X cards in your hand");
+    Console.WriteLine("toggleAll\n    Toggles all cards in your hand");
+    Console.WriteLine("toggleLast\n    Toggles the last card in your hand");
+    Console.WriteLine("Suit\n    Sorts your hand according to the cards suits");
+    Console.WriteLine("Ascending\n    Sorts your hand in order of ascending value");
+    Console.WriteLine("Descending\n    Sorts your hand in order of descending value");
+    Console.WriteLine("Help\n    Writes this list");
+    Console.WriteLine("Play\n    Plays your toggled cards");
+    Console.WriteLine("Discard\n    Discards your toggled cards");
+    Console.WriteLine("GetJoker:X\n    Gives you the joker with ID X. 1<=X<=15");
+}   

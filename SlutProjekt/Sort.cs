@@ -6,7 +6,7 @@ class Sort{
         {
             foreach(Card card in inputCards)
             {
-                if (card.Value==cardValue)
+                if (card.value==cardValue)
                 {
                     dummyList.Add(card);
                 }
@@ -21,7 +21,7 @@ class Sort{
         {
             foreach(Card card in inputCards)
             {
-                if (card.Value==cardValue)
+                if (card.value==cardValue)
                 {
                     dummyList.Add(card);
                 }
@@ -38,7 +38,7 @@ class Sort{
             List<Card> dummyList2 = [];
             foreach (Card card in inputCards)
             {
-                if (card.Suit==suit)
+                if (card.suit==suit)
                 {
                     dummyList2.Add(card);
                 }

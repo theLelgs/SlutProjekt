@@ -1,0 +1,16 @@
+1:+4 Mult
+2:Played card with the Diamonds suit give +3 Mult when scored
+3:Played card with the Hearts suit give +3 Mult when scored
+4:Played card with the Spades suit give +3 Mult when scored
+5:Played card with the Clubs suit give +3 Mult when scored
+6:+8 Mult if played hand contains a Pair
+7:+12 Mult if played hand contains Three of a Kind
+8:+10 Mult if played hand contains Two Pair
+9:+12 Mult if played hand contains a Straight
+10:+10 Mult if played hand contains a Flush
+11:+50 Chips if played hand contains a Pair
+12:+100 Chips if played hand contains Three
+13:+80 Chips if played hand contains Two Pair
+14:+100 Chips if played hand contains a Straight
+15:+80 Chips if played hand contains a Flush
+45:1/4 chance to upgrade played hand

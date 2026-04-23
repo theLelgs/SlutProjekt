@@ -1,0 +1,18 @@
+JokerID:JokerName:TriggerValues(1|2):TriggerSuit:TriggerHands(Pair|Two Pair)
+0:TEST JOKER:0:null:null
+1:Joker:0:null:null
+2:Greedy Joker:0:Diamonds:null
+3:Lusty Joker:0:Hearts:null
+4:Wrathul Joker:0:Spades:null
+5:Gluttonous Joker:0:Clubs:null
+6:Jolly Joker:0:null:Pair
+7:Zany Joker:0:null:Three of a Kind
+8:Mad Joker:0:null:Two Pair
+9:Crazy Joker:0:null:Straight
+10:Droll Joker:0:null:Flush
+11:Sly Joker:0:null:Pair
+12:Wily Joker:0:null:Three of a Kind
+13:Clever Joker:0:null:Two Pair
+14:Devious Joker:0:null:Straight
+15:Crafty Joker:0:null:Flush
+45:Space Joker:0:null:null
