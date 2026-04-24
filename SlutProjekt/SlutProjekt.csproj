@@ -11,4 +11,7 @@
     <PackageReference Include="Raylib-cs" Version="7.0.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="*.txt" CopyToOutputDirectory="Always"/>
+  </ItemGroup>
 </Project>
