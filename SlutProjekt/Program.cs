@@ -216,6 +216,7 @@ while (gameRunning)
     }
 }
 
+//Draws cards
 static (List<Card> newHand, List<Card> newDeckCards) DrawCard(int cardsToDraw, List<Card> hand, Deck deck)
 {
     List<Card> newHand = hand;
@@ -228,6 +229,7 @@ static (List<Card> newHand, List<Card> newDeckCards) DrawCard(int cardsToDraw, L
     }
     return (newHand, newDeckCards);
 }
+//Finds the best hand possible using played cards (ignores levels)
 static string FindBestHand(List<Card> selectedCards)
 {
     (Dictionary<int, int> valueDictionary, Dictionary<string, int> suitDictionary) = MakeDictionary(selectedCards);
@@ -245,6 +247,7 @@ static string FindBestHand(List<Card> selectedCards)
     }
     return "High Card";
 }
+//Makes the dictionary for FindBestHand()
 static (Dictionary<int, int>, Dictionary<string, int>) MakeDictionary(List<Card> selectedCards)
 {
     (Dictionary<int, int> valueDictionary, Dictionary<string, int> suitDictionary) = ([],[]);
@@ -269,6 +272,7 @@ static (Dictionary<int, int>, Dictionary<string, int>) MakeDictionary(List<Card>
     }
     return (valueDictionary, suitDictionary);
 }
+//Gets a list of all hands that can be made from played cards
 static List<string> GetHands(Dictionary<int,int> valueDictionary, Dictionary<string, int> suitDictionary, List<Card> selectedCards)
 {
     List<string> validHands = [];
@@ -312,6 +316,7 @@ static List<string> GetHands(Dictionary<int,int> valueDictionary, Dictionary<str
     validHands=LookForComboHands(validHands);
     return validHands;
 }
+//Looks for basic hands, such as "Pair" and "Flush"
 static List<string> LookForBasicHands(List<string> validHands, Dictionary<int, int> valueDictionary, Dictionary<string, int> suitDictionary, List<Card> selectedCards)
 {
     if (valueDictionary.ContainsValue(2))
@@ -336,6 +341,7 @@ static List<string> LookForBasicHands(List<string> validHands, Dictionary<int, i
     }
     return validHands;
 }
+//Looks for combo hands, such as "Full House" and "Straight Flush"
 static List<string> LookForComboHands(List<string> validHands)
 {
     if (validHands.Contains("Three of a Kind")&&validHands.Contains("Pair"))
@@ -356,6 +362,7 @@ static List<string> LookForComboHands(List<string> validHands)
     }
     return validHands;
 }
+//Removes cards from ur hand, used by "play" and "discard"
 static (List<Card> newHand, List<Card> newSelectedCards) RemoveCards(List<Card> hand, List<Card> selectedCards)
 {
     foreach (Card card in selectedCards)
@@ -365,6 +372,7 @@ static (List<Card> newHand, List<Card> newSelectedCards) RemoveCards(List<Card> 
     selectedCards=[];
     return (hand, selectedCards);
 }
+//Calculates ur score based on cards played, jokers and the hand dictionary
 static int GetScore(List<Card> cardsPlayed, Dictionary<string, (int chips, int mult, int level, (int chipsBuff, int multBuff))> handDictionary, List<Joker> jokers) 
 {
 
@@ -376,6 +384,7 @@ static int GetScore(List<Card> cardsPlayed, Dictionary<string, (int chips, int m
     Console.WriteLine("Jokers: ");
     foreach (Joker joker in jokers)
     {
+        //Hitta vilka jokrar som triggras av att spela kort med värde X
         if (joker.triggerValues!=null)
         {
             if (triggerValues.TryGetValue(joker.triggerValues, out List<Joker> jokersToTrigger))
@@ -387,6 +396,7 @@ static int GetScore(List<Card> cardsPlayed, Dictionary<string, (int chips, int m
                 triggerValues.Add(joker.triggerValues, [joker]);    
             }
         }
+        //Hitta vilka jokrar som triggras av att spela kort med färg X
         if (joker.triggerSuit!=null)
         {
             if (triggerSuits.TryGetValue(joker.triggerSuit, out List<Joker> jokersToTrigger))
@@ -398,6 +408,7 @@ static int GetScore(List<Card> cardsPlayed, Dictionary<string, (int chips, int m
                 triggerSuits.Add(joker.triggerSuit, [joker]);    
             }
         }
+        //Hitta vilka jokrar som triggras av att spela handen X
         if (joker.triggerHands.Count!=0)
         {
             if (triggerHands.TryGetValue(joker.triggerHands, out List<Joker> jokersToTrigger))
@@ -409,6 +420,7 @@ static int GetScore(List<Card> cardsPlayed, Dictionary<string, (int chips, int m
                 triggerHands.Add(joker.triggerHands, [joker]);
             }
         }
+        //Hitta vilka jokrar som triggras efter varje hand
         if (triggerPostScoring.Contains(joker.jokerID))
         {
             toTrigger.Add(joker);
@@ -417,16 +429,19 @@ static int GetScore(List<Card> cardsPlayed, Dictionary<string, (int chips, int m
     (Dictionary<int,int> valueDictionary,  Dictionary<string, int> suitDictionary) = MakeDictionary(cardsPlayed);
     List<string> handsPlayed = GetHands(valueDictionary, suitDictionary, cardsPlayed);
     string handPlayed = FindBestHand(cardsPlayed);
+    //Ge chips- och multbas beroende på handen.
     int chips = handDictionary[handPlayed].chips;
     int mult = handDictionary[handPlayed].mult;
     List<int> cardScore = [2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 11];
     foreach (Card card in cardsPlayed)
     {
+        //Ge chips för varje kort man spelar
         chips+=cardScore[card.value-2];
         foreach (KeyValuePair<List<int>, List<Joker>> valuePair in triggerValues)
         {
             if (valuePair.Key.Contains(card.value))
             {
+                //Om värdet kan triggra en joker som du har, gör det.
                 for (int i = 0; i < valuePair.Value.Count; i++)
                 {
                 (valuePair.Value[i], chips, mult, handDictionary) = Joker.TriggerJoker(valuePair.Value[i], chips, mult, handPlayed, handDictionary);
@@ -435,6 +450,7 @@ static int GetScore(List<Card> cardsPlayed, Dictionary<string, (int chips, int m
         }
         if (triggerSuits.TryGetValue(card.suit, out List<Joker> jokerList))
         {
+            //Om kortets färg kan triggra en joker som du har, gör det.
             for (int i = 0; i < jokerList.Count; i++)
             {
                 (jokerList[i], chips, mult, handDictionary) = Joker.TriggerJoker(jokerList[i], chips, mult, handPlayed, handDictionary);
@@ -444,6 +460,7 @@ static int GetScore(List<Card> cardsPlayed, Dictionary<string, (int chips, int m
 
     foreach (KeyValuePair<List<string>, List<Joker>> valuePair in triggerHands)
     {
+        //Om din hand kan triggra jokrar du har, gör det.
         foreach (string hand in handsPlayed)
         {
             if (valuePair.Key.Contains(hand))
@@ -455,13 +472,16 @@ static int GetScore(List<Card> cardsPlayed, Dictionary<string, (int chips, int m
             }
         }
     }    
+    //Triggra alla jokrar som triggras varje hand.
     for (int i = 0; i < toTrigger.Count; i++)
     {
+        
         (toTrigger[i], chips, mult, handDictionary) = Joker.TriggerJoker(toTrigger[i], chips, mult, handPlayed, handDictionary);
     }
     Console.WriteLine($"Chips: {chips}, Mult: {mult}");
     return chips*mult;
 }
+//Prints all commands
 static void PrintCommands(){
     Console.WriteLine("toggle:X\n    Toggles the first X cards in your hand");
     Console.WriteLine("toggleAll\n    Toggles all cards in your hand");
