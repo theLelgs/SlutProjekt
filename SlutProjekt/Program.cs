@@ -6,6 +6,7 @@ Deck deck = new("Random");
 int handSize = 7;
 
 //Ante start:
+//tempDeck blir en exakt kopia av deck, används för att kunna förändra deck under matchen utan permanenta förändringar
 Deck tempDeck = new(null);
 foreach (Card card in deck.cards)
 {
@@ -13,13 +14,10 @@ foreach (Card card in deck.cards)
 }
 List<Card> hand = [];
 List<Card> selectedCards=[];
+List<Joker> jokers = [];
 
 
-Joker testJoker = new(45);
-List<Joker> jokers = [testJoker];
-
-
-
+//Dictionary som sparar alla olika poker-händer, samt vad de ger och hur de uppgraderas
 Dictionary<string, (int chips, int mult, int level, (int chipsBuff, int multBuff))> handDictionary = new()
 {
     {"High Card", (5, 1, 1, (10,1))},
@@ -36,43 +34,54 @@ Dictionary<string, (int chips, int mult, int level, (int chipsBuff, int multBuff
     {"Flush Five", (160, 16, 1, (50, 3))}
 };
 
-
+int score = 0;
 
 
 bool gameRunning = true;
+//Listar alla möjliga kommandon för spelaren vid starten.
 PrintCommands();
 while (gameRunning)
 {
+    //Drar kort tills antal kort når handSize (Default: 7)
     (hand, tempDeck.cards) = DrawCard(Math.Min(handSize-hand.Count,tempDeck.cards.Count), hand, tempDeck);
     
+    //Listar alla kort i handen
     Console.WriteLine("\nHand: ");
     foreach (Card card in hand)
     {
         if (selectedCards.Contains(card))
         {
-            Console.Write("    ");
+            Console.Write("  --");
         }
         Console.WriteLine($"    {card.value} of {card.suit}");
     }
 
-    input = Console.ReadLine();
-    if (input == "Help")
+    input = Console.ReadLine().ToLower();
+
+    //Om spelaren skriver "help", skriv ut alla kommandon 
+    if (input == "help")
     {
         PrintCommands();
     }
-    else if (input == "Suit")
+    
+    //Om spelaren skriver "suit", sortera korten i handen efter färg
+    else if (input == "suit")
     {
         hand=Sort.Suit(hand);
     }
-    else if (input == "Descending")
+    //Om spelaren skriver "descending", sortera korten efter värde i minskande ordning
+    else if (input == "descending")
     {
         hand=Sort.Descending(hand);
     }
-    else if (input == "Ascending")
+    //Om spelaren skriver "ascending", sortera korten efter värde i ökande ordning
+    else if (input == "ascending")
     {
         hand=Sort.Ascending(hand);
     }
-    else if (input == "toggleLast")
+    
+    //Om spelaren skriver "toggleLast", toggla sista kortet i handen
+    else if (input == "togglelast")
     {
         if (selectedCards.Contains(hand[^1]))
         {
@@ -83,7 +92,8 @@ while (gameRunning)
             selectedCards.Add(hand[^1]);
         }
     }
-    else if (input == "toggleAll")
+    //Om spelaren skriver "toggleAll", toggla alla kort i handen
+    else if (input == "toggleall")
     {
         if (MethodBox.ListsAreTheSame(selectedCards, hand))
         {
@@ -99,8 +109,10 @@ while (gameRunning)
             }
         }
     }
+    
     else if (input.Contains(':'))
     {        
+        //Om spelaren skriver "toggle:X", toggla de första X korten
         if (input.Split(":")[0]=="toggle")
         {
             if (int.TryParse(input.Split(":")[1], out int toToggle))
@@ -144,7 +156,8 @@ while (gameRunning)
                 Console.WriteLine("You did not write a valid number after \"toggle:\". Try again");
             }
         }
-        if(input.Split(":")[0]=="GetJoker")
+        //Om spelaren skriver "getJoker:X", ge spelaren jokern med ID = X
+        if(input.Split(":")[0]=="getjoker")
         {
             if (int.TryParse(input.Split(":")[1], out int jokerID))
             {
@@ -164,29 +177,40 @@ while (gameRunning)
                     Console.WriteLine("You need to input a number between 1 and 15 (except 45), choose another number");
                 }
             }
+            else
+            {
+                Console.WriteLine("You did not write a valid number after \"GetJoker:\". Try again");                
+            }
         }
     }
     
+    //Om spelaren skriver "discard", släng korten som är togglade
     else if (input == "discard")
     {
         (hand, selectedCards) = RemoveCards(hand, selectedCards);
     }
-
+    //Om spelaren skriver "play", spela alla togglade kort
     else if (input == "play"&&selectedCards.Count!=0)
     {
     
         //Look for how many instances of each value, add to dictionary
 
         Console.WriteLine("Played hand: " + FindBestHand(selectedCards));
-        Console.WriteLine($"Score: {GetScore(selectedCards, handDictionary, jokers)}");
-        
+        int scoreToGain = GetScore(selectedCards, handDictionary, jokers);
+        Console.WriteLine($"Score: {scoreToGain}");
+        score += scoreToGain;
         //Remove the played cards
         (hand, selectedCards) = RemoveCards(hand, selectedCards);
     }
-
-    if (deck.cards.Count==0&&hand.Count==0)
+    else
+    {
+        Console.WriteLine("No valid commands found. Type \"Help\" to get a list of all valid commands.");
+    }
+    //Om decket är tomt, stäng av
+    if (tempDeck.cards.Count==0&&hand.Count==0)
     {
         Console.WriteLine("You lose lmao, deck ran out");
+        Console.WriteLine($"Total Score: {score}");
         Console.ReadKey();
         gameRunning=false;
     }
